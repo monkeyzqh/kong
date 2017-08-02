@@ -75,7 +75,8 @@ describe("URI encoding", function()
     local body = assert.res_status(200, res)
     local json = cjson.decode(body)
 
-    assert.equal(helpers.mock_upstream_host .. "/request?param=1.2.3", json.url)
+    assert.equal(helpers.mock_upstream_protocol .. "://" ..
+                 helpers.mock_upstream_host .. "/request?param=1.2.3", json.url)
   end)
 
   it("issue #749 does not decode percent-encoded args", function()
@@ -92,7 +93,8 @@ describe("URI encoding", function()
     local body = assert.res_status(200, res)
     local json = cjson.decode(body)
 
-    assert.equal(helpers.mock_upstream_host .. "/request?param=abc%7Cdef", json.url)
+    assert.equal(helpers.mock_upstream_protocol .. "://" ..
+                 helpers.mock_upstream_host .. "/request?param=abc%7Cdef", json.url)
   end)
 
   it("issue #688 does not percent-decode proxied URLs", function()
@@ -109,7 +111,8 @@ describe("URI encoding", function()
     local body = assert.res_status(200, res)
     local json = cjson.decode(body)
 
-    assert.equal(helpers.mock_upstream_host .. "/request/foo%2Fbar", json.url)
+    assert.equal(helpers.mock_upstream_protocol .. "://" ..
+                 helpers.mock_upstream_host .. "/request/foo%2Fbar", json.url)
   end)
 
   it("issue #2512 does not double percent-encode upstream URLs", function()

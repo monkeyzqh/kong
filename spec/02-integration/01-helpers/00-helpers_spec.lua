@@ -199,7 +199,7 @@ describe("helpers: assertions and modifiers", function()
         }
       })
       local json = assert.request(r).has.jsonbody()
-      assert.equals("world", json.hello)
+      assert.equals("world", json.params.hello)
     end)
     it("succeeds on a mock_upstream request object on /post", function()
       local r = assert(client:send {
@@ -212,7 +212,7 @@ describe("helpers: assertions and modifiers", function()
         }
       })
       local json = assert.request(r).has.jsonbody()
-      assert.equals("world", json.hello)
+      assert.equals("world", json.params.hello)
     end)
   end)
 

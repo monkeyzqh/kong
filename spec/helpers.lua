@@ -623,8 +623,7 @@ luassert:register("assertion", "res_status", res_status,
 
 --- Checks and returns a json body of an http response/request. Only checks
 -- validity of the json, does not check appropriate headers. Setting the target
--- to check can be done through `request` or `response` (requests are only
--- supported with mockbin.com).
+-- to check can be done through `request` or `response`
 -- @name jsonbody
 -- @return the decoded json as a table
 -- @usage
@@ -645,7 +644,9 @@ local function jsonbody(state, args)
     end
     return true, {json}
   else
-    local json = assert(rawget(state, "kong_request").json, "No json data found in the request")
+    local r = rawget(state, "kong_request")
+    assert(r.params, "No json data found in the request")
+    local json = {params = r.params, data = r.data}
     return true, {json}
   end
 end
