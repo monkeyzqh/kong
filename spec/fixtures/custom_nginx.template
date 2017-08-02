@@ -450,7 +450,7 @@ http {
                 local url = string.format("%s://%s%s", ngx.var.scheme,
                                                        ngx.var.host,
                                                        ngx.var.request_uri)
-                local json
+                local params
                 local data = ""
                 local form = {}
                 local files = {} -- not supported
@@ -468,7 +468,7 @@ http {
                             return ngx.exit(ngx.HTTP_INTERNAL_SERVER_ERROR)
                         end
                         -- httpbin just ignores decoding errors
-                        json = cjson_safe.decode(data)
+                        params = cjson_safe.decode(data)
                     end
                 end
                 local t     = {
@@ -477,7 +477,7 @@ http {
                     files   = files,
                     form    = form,
                     headers = headers,
-                    json    = json or cjson.null,
+                    params  = params or cjson.null,
                     origin  = origin,
                     url     = url,
                 }
@@ -562,7 +562,7 @@ http {
                 local url = string.format("%s://%s%s", ngx.var.scheme,
                                                        ngx.var.host,
                                                        ngx.var.request_uri)
-                local json
+                local params
                 local data = ""
                 local form = {}
                 local files = {} -- not supported
@@ -580,7 +580,7 @@ http {
                             return ngx.exit(ngx.HTTP_INTERNAL_SERVER_ERROR)
                         end
                         -- httpbin just ignores decoding errors
-                        json = cjson_safe.decode(data)
+                        params = cjson_safe.decode(data)
                     end
                 end
                 local t     = {
@@ -590,7 +590,7 @@ http {
                     files   = files,
                     form    = form,
                     headers = headers,
-                    json    = json or cjson.null,
+                    params  = params or cjson.null,
                     origin  = origin,
                     url     = url,
                 }
@@ -614,7 +614,7 @@ http {
                 local url = string.format("%s://%s%s", ngx.var.scheme,
                                                        ngx.var.host,
                                                        ngx.var.request_uri)
-                local json
+                local params
                 local data = ""
                 local form = {}
                 local files = {} -- not supported
@@ -632,7 +632,7 @@ http {
                             return ngx.exit(ngx.HTTP_INTERNAL_SERVER_ERROR)
                         end
                         -- httpbin just ignores decoding errors
-                        json = cjson_safe.decode(data)
+                        params = cjson_safe.decode(data)
                     end
                 end
                 local t     = {
@@ -642,7 +642,7 @@ http {
                     files   = files,
                     form    = form,
                     headers = headers,
-                    json    = json or cjson.null,
+                    params  = params or cjson.null,
                     origin  = origin,
                     url     = url,
                 }

@@ -8,7 +8,8 @@
 local BIN_PATH = "bin/kong"
 local TEST_CONF_PATH = "spec/kong_tests.conf"
 local CUSTOM_PLUGIN_PATH = "./spec/fixtures/custom_plugins/?.lua"
-local MOCK_UPSTREAM_HOST = "http://127.0.0.1"
+local MOCK_UPSTREAM_PROTOCOL = "http"
+local MOCK_UPSTREAM_HOST = "127.0.0.1"
 local MOCK_UPSTREAM_PORT = 55555
 
 local conf_loader = require "kong.conf_loader"
@@ -698,7 +699,7 @@ luassert:register("assertion", "header", res_header,
                   "assertion.res_header.positive")
 
 ---
--- An assertion to look for a query parameter in a `queryString` subtable.
+-- An assertion to look for a query parameter in a query string
 -- Parameter name comparison is done case-insensitive.
 -- @name queryparam
 -- @param name name of the query parameter to look up (case insensitive)
@@ -708,11 +709,7 @@ local function req_query_param(state, args)
   local req = rawget(state, "kong_request")
   assert(req, "'queryparam' assertion only works with a request object")
   local params
-  if type(req.queryString) == "table" then
-    -- it's a mockbin one
-    params = req.queryString
-  elseif type(req.args) == "table" then
-    -- it's a httpbin one
+  if type(req.args) == "table" then
     params = req.args
   else
     error("No query parameters found in request object")
@@ -894,9 +891,12 @@ return {
   bin_path = BIN_PATH,
   test_conf = conf,
   test_conf_path = TEST_CONF_PATH,
-  mock_upstream_host = MOCK_UPSTREAM_HOST,
-  mock_upstream_port = MOCK_UPSTREAM_PORT,
-  mock_upstream_url  = MOCK_UPSTREAM_HOST .. ':' .. MOCK_UPSTREAM_PORT,
+  mock_upstream_protocol = MOCK_UPSTREAM_PROTOCOL,
+  mock_upstream_host     = MOCK_UPSTREAM_HOST,
+  mock_upstream_port     = MOCK_UPSTREAM_PORT,
+  mock_upstream_url      = MOCK_UPSTREAM_PROTOCOL .. "://" ..
+                           MOCK_UPSTREAM_HOST .. ':' ..
+                           MOCK_UPSTREAM_PORT,
 
   -- Kong testing helpers
   execute = exec,
