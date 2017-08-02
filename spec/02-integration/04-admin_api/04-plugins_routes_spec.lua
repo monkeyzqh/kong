@@ -32,7 +32,7 @@ describe("Admin API", function()
         local api = assert(helpers.dao.apis:insert {
           name = "api-" .. i,
           hosts = { i .. "-api.com" },
-          upstream_url = "http://mockbin.com"
+          upstream_url = "http://example.com"
         })
 
         plugins[i] = assert(helpers.dao.plugins:insert {

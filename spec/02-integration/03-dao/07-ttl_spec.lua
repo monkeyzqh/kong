@@ -17,9 +17,9 @@ helpers.for_each_dao(function(kong_config)
 
     it("on insert", function()
       local api, err = factory.apis:insert({
-        name = "mockbin",
-        hosts = { "mockbin.com" },
-        upstream_url = "http://mockbin.com"
+        name = "example",
+        hosts = { "example.com" },
+        upstream_url = "http://example.com"
       }, {ttl = 3})
       assert.falsy(err)
 
@@ -38,9 +38,9 @@ helpers.for_each_dao(function(kong_config)
 
     it("on update", function()
       local api, err = factory.apis:insert({
-        name = "mockbin",
-        hosts = { "mockbin.com" },
-        upstream_url = "http://mockbin.com"
+        name = "example",
+        hosts = { "example.com" },
+        upstream_url = "http://example.com"
       }, {ttl = 3})
       assert.falsy(err)
 
@@ -49,7 +49,7 @@ helpers.for_each_dao(function(kong_config)
       assert.truthy(row)
 
       -- Updating the TTL to a higher value
-      factory.apis:update({name = "mockbin2"}, {id = api.id}, {ttl = 4})
+      factory.apis:update({name = "example2"}, {id = api.id}, {ttl = 4})
 
       ngx.sleep(1)
 
@@ -69,9 +69,9 @@ helpers.for_each_dao(function(kong_config)
     if kong_config.database == "postgres" then
       it("retrieves proper entity with no TTL properties attached", function()
         local _, err = factory.apis:insert({
-          name = "mockbin",
-          hosts = { "mockbin.com" },
-          upstream_url = "http://mockbin.com"
+          name = "example",
+          hosts = { "example.com" },
+          upstream_url = "http://example.com"
         }, {ttl = 5})
 
         assert.falsy(err)
@@ -87,7 +87,7 @@ helpers.for_each_dao(function(kong_config)
         assert.is_nil(rows[1].primary_key_name)
         assert.is_nil(rows[1].expire_at)
       end)
-      
+
       it("clears old entities", function()
         local DB = require "kong.dao.db.postgres"
         local _db = DB.new(kong_config)
@@ -95,16 +95,16 @@ helpers.for_each_dao(function(kong_config)
         for i = 1, 4 do
           local _, err = factory.apis:insert({
             name = "api-" .. i,
-            hosts = { "mockbin" .. i .. ".com" },
-            upstream_url = "http://mockbin.com"
+            hosts = { "example" .. i .. ".com" },
+            upstream_url = "http://example.com"
           }, {ttl = 1})
           assert.falsy(err)
         end
 
         local _, err = factory.apis:insert({
           name = "long-ttl",
-          hosts = { "mockbin-longttl.com" },
-          upstream_url = "http://mockbin.com"
+          hosts = { "example-longttl.com" },
+          upstream_url = "http://example.com"
         }, {ttl = 3})
         assert.falsy(err)
 
