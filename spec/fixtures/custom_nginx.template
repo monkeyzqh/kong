@@ -316,174 +316,74 @@ http {
 
         location = / {
             access_by_lua_block {
-                if ngx.req.get_method() ~= "GET" then
-                    ngx.status = ngx.HTTP_NOT_ALLOWED
-                    ngx.header['x-powered-by'] = "mock_upstream"
-                    ngx.header['X-POWERED-BY'] = "mock_upstream"
-                    ngx.say("The method is not allowed for the requested URL")
-                    return ngx.exit(ngx.HTTP_NOT_ALLOWED)
-                end
+                local mu = require('spec.fixtures.mock_upstream')
+                return mu.filter_access_by_method("GET")
             }
             content_by_lua_block {
-                local cjson = require "cjson"
-                local t     = {
-                  valid_routes = {
-                    ["/ws"] = "web sockets echo server",
-                    ["/get"] = "Accepts a GET request and returns it in json format",
-                    ["/post"] = "Accepts a POST request and returns it in json format",
-                    ["/anything"] = "Accepts any request and returns it in json format",
-                    ["/request"] = "Alias to /anything",
-                    ["/delay/s"] = "Delay the response for s seconds",
-                    ["/basic-auth/username/password"] = "Performs basic authentication with the given username/password",
-                    ["/status/code"] = "Returns a response with the specified status code"
-                  }
-                }
-                ngx.header['x-powered-by'] = "mock_upstream"
-                ngx.header['X-POWERED-BY'] = "mock_upstream"
-                if ngx.req.get_method() ~= "HEAD" then
-                  ngx.say(cjson.encode(t))
+                if ngx.req.get_method() == "HEAD" then
+                    ngx.header['x-powered-by'] = "mock_upstream"
+                    ngx.header['X-POWERED-BY'] = "mock_upstream"
+
+                else
+                    local mu = require('spec.fixtures.mock_upstream')
+                    return mu.send_json_response({
+                        valid_routes = {
+                            ["/ws"] = "web sockets echo server",
+                            ["/get"] = "Accepts a GET request and returns it in json format",
+                            ["/post"] = "Accepts a POST request and returns it in json format",
+                            ["/anything"] = "Accepts any request and returns it in json format",
+                            ["/request"] = "Alias to /anything",
+                            ["/delay/s"] = "Delay the response for s seconds",
+                            ["/basic-auth/usr/pass"] = "Performs basic authentication with the given credentials",
+                            ["/status/code"] = "Returns a response with the specified status code"
+                        }
+                    })
                 end
             }
         }
 
         location = /ws {
             content_by_lua_block {
-                local server = require "resty.websocket.server"
-                local wb, err = server:new{
-                  timeout = 5000,
-                  max_payload_len = 65535,
-                }
-
-                if not wb then
-                  ngx.log(ngx.ERR, "failed to open websocket: ", err)
-                  return ngx.exit(444)
-                end
-
-                while true do
-                  local data, typ, err = wb:recv_frame()
-                  if wb.fatal then
-                    ngx.log(ngx.ERR, "failed to receive frame: ", err)
-                    return ngx.exit(444)
-                  end
-
-                  if data then
-                    if typ == "close" then
-                      break
-                    end
-
-                    if typ == "ping" then
-                      local bytes, err = wb:send_pong(data)
-                      if not bytes then
-                        ngx.log(ngx.ERR, "failed to send pong: ", err)
-                        return ngx.exit(444)
-                      end
-
-                    elseif typ == "pong" then
-                      ngx.log(ngx.INFO, "client ponged")
-
-                    elseif typ == "text" then
-                      local bytes, err = wb:send_text(data)
-                      if not bytes then
-                        ngx.log(ngx.ERR, "failed to send text: ", err)
-                        return ngx.exit(444)
-                      end
-                    end
-
-                  else
-                    local bytes, err = wb:send_ping()
-                    if not bytes then
-                      ngx.log(ngx.ERR, "failed to send ping: ", err)
-                      return ngx.exit(444)
-                    end
-                  end
-                end
-
-                wb:send_close()
+                local mu = require('spec.fixtures.mock_upstream')
+                return mu.serve_web_sockets()
             }
         }
 
         location = /get {
             access_by_lua_block {
-                if ngx.req.get_method() ~= "GET" then
-                    ngx.status = ngx.HTTP_NOT_ALLOWED
-                    ngx.header['x-powered-by'] = "mock_upstream"
-                    ngx.header['X-POWERED-BY'] = "mock_upstream"
-                    ngx.say("The method is not allowed for the requested URL")
-                    return ngx.exit(ngx.HTTP_NOT_ALLOWED)
-                end
+                local mu = require('spec.fixtures.mock_upstream')
+                return mu.filter_access_by_method("GET")
             }
             content_by_lua_block {
-                local cjson = require "cjson"
-                local headers = ngx.req.get_headers()
-                local origin = ngx.var.remote_addr
-                local args = ngx.req.get_uri_args()
-                local url = string.format("%s://%s%s", ngx.var.scheme,
-                                                       ngx.var.host,
-                                                       ngx.var.request_uri)
-                local t     = {
-                    url     = url,
-                    args    = args,
-                    origin  = origin,
-                    headers = headers,
-                }
-                ngx.header['x-powered-by'] = "mock_upstream"
-                ngx.header['X-POWERED-BY'] = "mock_upstream"
-                ngx.say(cjson.encode(t))
+                local mu = require('spec.fixtures.mock_upstream')
+
+                return mu.send_json_response({
+                    args    = ngx.req.get_uri_args(),
+                    headers = ngx.req.get_headers(),
+                    origin  = ngx.var.remote_addr,
+                    url     = mu.get_request_url(),
+                })
             }
         }
         location = /post {
             access_by_lua_block {
-                if ngx.req.get_method() ~= "POST" then
-                    ngx.status = ngx.HTTP_NOT_ALLOWED
-                    ngx.header['x-powered-by'] = "mock_upstream"
-                    ngx.header['X-POWERED-BY'] = "mock_upstream"
-                    ngx.say("The method is not allowed for the requested URL")
-                    return ngx.exit(ngx.HTTP_NOT_ALLOWED)
-                end
+                local mu = require('spec.fixtures.mock_upstream')
+                return mu.filter_access_by_method("POST")
             }
             content_by_lua_block {
-                local cjson = require "cjson"
-                local cjson_safe = require "cjson.safe"
-                local headers = ngx.req.get_headers()
-                local origin = ngx.var.remote_addr
-                local args = ngx.req.get_uri_args()
-                local url = string.format("%s://%s%s", ngx.var.scheme,
-                                                       ngx.var.host,
-                                                       ngx.var.request_uri)
-                local params
-                local data = ""
-                local form = {}
-                local files = {} -- not supported
-                local ct = headers["content-type"]
-                if ct then
-                    ngx.req.read_body()
-                    if string.find(ct, "application/x-www-form-urlencoded",
-                       nil, true) then
-                        form = ngx.req.get_post_args()
-                    elseif string.find(ct, "application/json", nil, true) then
-                        local err
-                        data, err = ngx.req.get_body_data()
-                        if not data then
-                            ngx.log(ngx.ERR, "could not read body data: ", err)
-                            return ngx.exit(ngx.HTTP_INTERNAL_SERVER_ERROR)
-                        end
-                        -- httpbin just ignores decoding errors
-                        params = cjson_safe.decode(data)
-                    end
-                end
-                local t     = {
-                    args    = args,
+                local mu                 = require('spec.fixtures.mock_upstream')
+                local headers            = ngx.req.get_headers()
+                local data, form, params = mu.parse_post_data(headers)
+                return mu.send_json_response({
+                    args    = ngx.req.get_uri_args(),
                     data    = data,
-                    files   = files,
+                    files   = {}, -- not supported
                     form    = form,
                     headers = headers,
-                    params  = params or cjson.null,
-                    origin  = origin,
-                    url     = url,
-                }
-                ngx.header['x-powered-by'] = "mock_upstream"
-                ngx.header['X-POWERED-BY'] = "mock_upstream"
-                ngx.say(cjson.encode(t))
+                    origin  = ngx.var.remote_addr,
+                    params  = params,
+                    url     = mu.get_request_url(),
+                })
             }
         }
         location ~ "^/basic-auth$" {
@@ -491,112 +391,35 @@ http {
         }
         location ~ "^/basic-auth/(?<username>[a-zA-Z]+)/(?<password>[a-zA-Z]+)$" {
             access_by_lua_block {
-
-                local function retrieve_credentials(authorization_header)
-                  if not authorization_header then
-                    return
-                  end
-
-                  local iterator, iter_err = ngx.re.gmatch(authorization_header,
-                                                           "\\s*[Bb]asic\\s*(.+)")
-                  if not iterator then
-                    ngx.log(ngx.ERR, iter_err)
-                    return
-                  end
-
-                  local m, err = iterator()
-
-                  if err then
-                    ngx.log(ngx.ERR, err)
-                    return
-                  end
-
-                  if m and m[1] then
-                    local decoded_basic = ngx.decode_base64(m[1])
-
-                    if decoded_basic then
-                      local user_pass = utils.split(decoded_basic, ":")
-                      return user_pass[1], user_pass[2]
-                    end
-                  end
-                end
-
-                local headers = ngx.req.get_headers()
-
-                local given_username, given_password = retrieve_credentials(
-                  headers["proxy-authorization"]
-                )
-
-                if not given_username then
-                  local given_username, given_password = retrieve_credentials(
-                    headers["authorization"]
-                  )
-                end
-
-                if given_username ~= ngx.var.username or
-                   given_password ~= ngx.var.password then
-                  ngx.header["WWW-Authenticate"] = realm
-                  ngx.header['x-powered-by'] = "mock_upstream"
-                  ngx.header['X-POWERED-BY'] = "mock_upstream"
-                  return ngx.exit(ngx.HTTP_UNAUTHORIZED)
-                end
+                local mu = require('spec.fixtures.mock_upstream')
+                return mu.filter_access_by_basic_auth(ngx.var.username,
+                                                      ngx.var.password)
             }
             content_by_lua_block {
-                local cjson = require "cjson"
-                local t = {
+                local mu = require('spec.fixtures.mock_upstream')
+                return mu.send_json_response({
                   authenticated = true,
                   user          = ngx.var.username,
-                }
-                ngx.header['x-powered-by'] = "mock_upstream"
-                ngx.header['X-POWERED-BY'] = "mock_upstream"
-                ngx.say(cjson.encode(t))
+                })
             }
         }
         location ~ "^/(request|anything)" {
             content_by_lua_block {
-                local cjson = require "cjson"
-                local cjson_safe = require "cjson.safe"
-                local headers = ngx.req.get_headers()
-                local origin = ngx.var.remote_addr
-                local args = ngx.req.get_uri_args()
-                local url = string.format("%s://%s%s", ngx.var.scheme,
-                                                       ngx.var.host,
-                                                       ngx.var.request_uri)
-                local params
-                local data = ""
-                local form = {}
-                local files = {} -- not supported
-                local ct = headers["content-type"]
-                if ct then
-                    ngx.req.read_body()
-                    if string.find(ct, "application/x-www-form-urlencoded",
-                       nil, true) then
-                        form = ngx.req.get_post_args()
-                    elseif string.find(ct, "application/json", nil, true) then
-                        local err
-                        data, err = ngx.req.get_body_data()
-                        if not data then
-                            ngx.log(ngx.ERR, "could not read body data: ", err)
-                            return ngx.exit(ngx.HTTP_INTERNAL_SERVER_ERROR)
-                        end
-                        -- httpbin just ignores decoding errors
-                        params = cjson_safe.decode(data)
-                    end
-                end
-                local t     = {
-                    method  = ngx.var.request_method,
-                    args    = args,
+                local mu                 = require('spec.fixtures.mock_upstream')
+                local headers            = ngx.req.get_headers()
+                local data, form, params = mu.parse_post_data(headers)
+
+                return mu.send_json_response({
+                    args    = ngx.req.get_uri_args(),
                     data    = data,
-                    files   = files,
+                    files   = {}, -- not supported
                     form    = form,
                     headers = headers,
-                    params  = params or cjson.null,
-                    origin  = origin,
-                    url     = url,
-                }
-                ngx.header['x-powered-by'] = "mock_upstream"
-                ngx.header['X-POWERED-BY'] = "mock_upstream"
-                ngx.say(cjson.encode(t))
+                    method  = ngx.var.request_method,
+                    origin  = ngx.var.remote_addr,
+                    params  = params,
+                    url     = mu.get_request_url(),
+                })
             }
         }
         location = "/delay" {
@@ -604,51 +427,21 @@ http {
         }
         location ~ "^/delay/(?<delay_seconds>\d{3})$" {
             content_by_lua_block {
-                ngx.sleep(ngx.var.delay_seconds)
+                local mu                 = require('spec.fixtures.mock_upstream')
+                local headers            = ngx.req.get_headers()
+                local data, form, params = mu.parse_post_data(headers)
 
-                local cjson = require "cjson"
-                local cjson_safe = require "cjson.safe"
-                local headers = ngx.req.get_headers()
-                local origin = ngx.var.remote_addr
-                local args = ngx.req.get_uri_args()
-                local url = string.format("%s://%s%s", ngx.var.scheme,
-                                                       ngx.var.host,
-                                                       ngx.var.request_uri)
-                local params
-                local data = ""
-                local form = {}
-                local files = {} -- not supported
-                local ct = headers["content-type"]
-                if ct then
-                    ngx.req.read_body()
-                    if string.find(ct, "application/x-www-form-urlencoded",
-                       nil, true) then
-                        form = ngx.req.get_post_args()
-                    elseif string.find(ct, "application/json", nil, true) then
-                        local err
-                        data, err = ngx.req.get_body_data()
-                        if not data then
-                            ngx.log(ngx.ERR, "could not read body data: ", err)
-                            return ngx.exit(ngx.HTTP_INTERNAL_SERVER_ERROR)
-                        end
-                        -- httpbin just ignores decoding errors
-                        params = cjson_safe.decode(data)
-                    end
-                end
-                local t     = {
-                    method  = ngx.var.request_method,
-                    args    = args,
+                return mu.send_json_response({
+                    args    = ngx.req.get_uri_args(),
                     data    = data,
-                    files   = files,
+                    files   = {}, -- not supported
                     form    = form,
                     headers = headers,
-                    params  = params or cjson.null,
-                    origin  = origin,
-                    url     = url,
-                }
-                ngx.header['x-powered-by'] = "mock_upstream"
-                ngx.header['X-POWERED-BY'] = "mock_upstream"
-                ngx.say(cjson.encode(t))
+                    method  = ngx.var.request_method,
+                    origin  = ngx.var.remote_addr,
+                    params  = params,
+                    url     = mu.get_request_url(),
+                })
             }
         }
 

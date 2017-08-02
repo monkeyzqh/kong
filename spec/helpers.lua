@@ -457,19 +457,20 @@ local function modifier_request(state, arguments, level)
   assert(type(res) == "table" and type(res.read_body) == "function",
          "Expected a http response object, got '" .. tostring(res) .. "'. " .. generic)
 
-  local body, err
+  local body, request, err
   body = assert(res:read_body())
-  body, err = cjson.decode(body)
+  request, err = cjson.decode(body)
 
-  assert(body, "Expected the http response object to have a json encoded body,"
-             .. " but decoding gave error '" .. tostring(err) .. "'. " .. generic)
+  assert(request, "Expected the http response object to have a json encoded body,"
+                  .. " but decoding gave error '" .. tostring(err) .. "'. Obtained body: "
+                  .. body .. "\n." .. generic)
 
   -- check if it is a mock_upstream request
   if lookup((res.headers or {}),"X-Powered-By") ~= "mock_upstream" then
     error("Could not determine the response to be from mock_upstream")
   end
 
-  rawset(state, "kong_request", body)
+  rawset(state, "kong_request", request)
   rawset(state, "kong_response", nil)
 
   return state
