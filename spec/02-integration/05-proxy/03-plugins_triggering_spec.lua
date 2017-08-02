@@ -25,7 +25,7 @@ describe("Plugins triggering", function()
     assert(helpers.dao.apis:insert {
       name = "global1",
       hosts = { "global1.com" },
-      upstream_url = "http://mockbin.com"
+      upstream_url = helpers.mock_upstream_url,
     })
     assert(helpers.dao.plugins:insert {
       name = "key-auth",
@@ -42,7 +42,7 @@ describe("Plugins triggering", function()
     local api1 = assert(helpers.dao.apis:insert {
       name = "api1",
       hosts = { "api1.com" },
-      upstream_url = "http://mockbin.com"
+      upstream_url = helpers.mock_upstream_url,
     })
     assert(helpers.dao.plugins:insert {
       name = "rate-limiting",
@@ -65,7 +65,7 @@ describe("Plugins triggering", function()
     local api2 = assert(helpers.dao.apis:insert {
       name = "api2",
       hosts = { "api2.com" },
-      upstream_url = "http://mockbin.com"
+      upstream_url = helpers.mock_upstream_url,
     })
     assert(helpers.dao.plugins:insert {
       name = "rate-limiting",
@@ -80,7 +80,7 @@ describe("Plugins triggering", function()
     local api3 = assert(helpers.dao.apis:insert {
       name = "api3",
       hosts = { "api3.com" },
-      upstream_url = "http://mockbin.com"
+      upstream_url = helpers.mock_upstream_url,
     })
     assert(helpers.dao.plugins:insert {
       name = "key-auth",
@@ -98,7 +98,9 @@ describe("Plugins triggering", function()
       }
     })
 
-    assert(helpers.start_kong())
+    assert(helpers.start_kong({
+      nginx_conf = "spec/fixtures/custom_nginx.template",
+    }))
     client = helpers.proxy_client()
   end)
 
