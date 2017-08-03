@@ -32,6 +32,7 @@ describe("OpenResty phases", function()
         helpers.stop_kong()
       end)
 
+      -- This fails. why?
       it("runs", function()
         local res = assert(proxy_client:send {
           method = "GET",

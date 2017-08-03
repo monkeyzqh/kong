@@ -33,25 +33,26 @@ dao_helpers.for_each_dao(function(kong_config)
         {
           name = "api-1",
           methods = "HEAD",
-          upstream_url = "http://httpbin.org:81",
+          upstream_url = helpers.mock_upstream_url,
           upstream_connect_timeout = 1, -- ms
         },
         {
           name = "api-2",
           methods = "POST",
-          upstream_url = "http://httpbin.org",
+          upstream_url = helpers.mock_upstream_url,
           upstream_send_timeout = 1, -- ms
         },
         {
           name = "api-3",
           methods = "GET",
-          upstream_url = "http://httpbin.org",
+          upstream_url = helpers.mock_upstream_url,
           upstream_read_timeout = 1, -- ms
         }
       }
 
       assert(helpers.start_kong({
-        database = kong_config.database
+        database   = kong_config.database,
+        nginx_conf = "spec/fixtures/custom_nginx.template",
       }))
     end)
 
