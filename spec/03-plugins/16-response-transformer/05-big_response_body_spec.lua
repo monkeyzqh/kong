@@ -11,24 +11,26 @@ describe("Plugin: response-transformer", function()
 
   setup(function()
     local api = assert(helpers.dao.apis:insert {
-      name = "tests-response-transformer",
-      hosts = { "response.com" },
-      upstream_url = "http://httpbin.org",
+      name         = "tests-response-transformer",
+      hosts        = { "response.com" },
+      upstream_url = helpers.mock_upstream_url,
     })
     assert(helpers.dao.plugins:insert {
       api_id = api.id,
-      name = "response-transformer",
+      name   = "response-transformer",
       config = {
-        add = {
+        add    = {
           json = {"p1:v1"},
         },
         remove = {
           json = {"json"},
         }
-      }
+      },
     })
 
-    assert(helpers.start_kong())
+    assert(helpers.start_kong({
+        nginx_conf = "spec/fixtures/custom_nginx.template",
+    }))
   end)
 
 
@@ -44,7 +46,7 @@ describe("Plugin: response-transformer", function()
     if client then client:close() end
   end)
 
-  it("add new parameters on large POST", function()
+  it("#focus add new parameters on large POST", function()
     local r = assert(client:send {
       method = "POST",
       path = "/post",

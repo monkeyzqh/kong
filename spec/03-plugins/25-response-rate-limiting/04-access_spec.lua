@@ -72,159 +72,163 @@ for i, policy in ipairs({"local", "cluster", "redis"}) do
       })
 
       local api = assert(helpers.dao.apis:insert {
-        name = "test1_com",
-        hosts = { "test1.com" },
-        upstream_url = "http://httpbin.org"
+        name         = "test1_com",
+        hosts        = { "test1.com" },
+        upstream_url = helpers.mock_upstream_url,
       })
       assert(helpers.dao.plugins:insert {
-        name = "response-ratelimiting",
+        name   = "response-ratelimiting",
         api_id = api.id,
         config = {
           fault_tolerant = false,
-          policy = policy,
-          redis_host = REDIS_HOST,
-          redis_port = REDIS_PORT,
+          policy         = policy,
+          redis_host     = REDIS_HOST,
+          redis_port     = REDIS_PORT,
           redis_password = REDIS_PASSWORD,
           redis_database = REDIS_DATABASE,
-          limits = {video = {minute = 6}}
+          limits         = { video = { minute = 6 } },
         }
       })
 
       api = assert(helpers.dao.apis:insert {
-        name = "test2_com",
-        hosts = { "test2.com" },
-        upstream_url = "http://httpbin.org"
+        name         = "test2_com",
+        hosts        = { "test2.com" },
+        upstream_url = helpers.mock_upstream_url,
       })
       assert(helpers.dao.plugins:insert {
-        name = "response-ratelimiting",
+        name   = "response-ratelimiting",
         api_id = api.id,
         config = {
           fault_tolerant = false,
-          policy = policy,
-          redis_host = REDIS_HOST,
-          redis_port = REDIS_PORT,
+          policy         = policy,
+          redis_host     = REDIS_HOST,
+          redis_port     = REDIS_PORT,
           redis_password = REDIS_PASSWORD,
           redis_database = REDIS_DATABASE,
-          limits = {video = {minute = 6, hour = 10}, image = {minute = 4}}
+          limits         = { video = { minute = 6, hour = 10 },
+                             image = { minute = 4 } },
         }
       })
 
       api = assert(helpers.dao.apis:insert {
-        name = "test3_com",
-        hosts = { "test3.com" },
-        upstream_url = "http://httpbin.org"
+        name         = "test3_com",
+        hosts        = { "test3.com" },
+        upstream_url = helpers.mock_upstream_url,
       })
       assert(helpers.dao.plugins:insert {
-        name = "key-auth",
-        api_id = api.id
-      })
-      assert(helpers.dao.plugins:insert {
-        name = "response-ratelimiting",
+        name   = "key-auth",
         api_id = api.id,
-        config = {limits = {video = {minute = 6}}}
       })
       assert(helpers.dao.plugins:insert {
-        name = "response-ratelimiting",
+        name   = "response-ratelimiting",
         api_id = api.id,
+        config = { limits = { video = { minute = 6 } } },
+      })
+      assert(helpers.dao.plugins:insert {
+        name        = "response-ratelimiting",
+        api_id      = api.id,
         consumer_id = consumer1.id,
-        config = {
+        config      = {
           fault_tolerant = false,
-          policy = policy,
-          redis_host = REDIS_HOST,
-          redis_port = REDIS_PORT,
+          policy         = policy,
+          redis_host     = REDIS_HOST,
+          redis_port     = REDIS_PORT,
           redis_password = REDIS_PASSWORD,
           redis_database = REDIS_DATABASE,
-          limits = {video = {minute = 2}}
+          limits         = { video = { minute = 2 } },
         }
       })
 
       api = assert(helpers.dao.apis:insert {
-        name = "test4_com",
-        hosts = { "test4.com" },
-        upstream_url = "http://httpbin.org"
+        name         = "test4_com",
+        hosts        = { "test4.com" },
+        upstream_url = helpers.mock_upstream_url,
       })
       assert(helpers.dao.plugins:insert {
-        name = "response-ratelimiting",
+        name   = "response-ratelimiting",
         api_id = api.id,
         config = {
           fault_tolerant = false,
-          policy = policy,
-          redis_host = REDIS_HOST,
-          redis_port = REDIS_PORT,
+          policy         = policy,
+          redis_host     = REDIS_HOST,
+          redis_port     = REDIS_PORT,
           redis_password = REDIS_PASSWORD,
           redis_database = REDIS_DATABASE,
-          limits = {video = {minute = 6}, image = {minute = 4}}
+          limits         = { video = { minute = 6 }, image = { minute = 4 } },
         }
       })
 
       api = assert(helpers.dao.apis:insert {
-        name = "test7_com",
-        hosts = { "test7.com" },
-        upstream_url = "http://httpbin.org"
+        name         = "test7_com",
+        hosts        = { "test7.com" },
+        upstream_url = helpers.mock_upstream_url,
       })
       assert(helpers.dao.plugins:insert {
-        name = "response-ratelimiting",
+        name   = "response-ratelimiting",
         api_id = api.id,
         config = {
           fault_tolerant = false,
-          policy = policy,
-          redis_host = REDIS_HOST,
-          redis_port = REDIS_PORT,
+          policy         = policy,
+          redis_host     = REDIS_HOST,
+          redis_port     = REDIS_PORT,
           redis_password = REDIS_PASSWORD,
           redis_database = REDIS_DATABASE,
           block_on_first_violation = true,
-          limits = {
+          limits         = {
             video = {
               minute = 6,
-              hour = 10
+              hour  = 10,
             },
             image = {
-              minute = 4
-            }
-          }
+              minute = 4,
+            },
+          },
         }
       })
 
       api = assert(helpers.dao.apis:insert {
-        name = "test8_com",
-        hosts = { "test8.com" },
-        upstream_url = "http://httpbin.org"
+        name         = "test8_com",
+        hosts        = { "test8.com" },
+        upstream_url = helpers.mock_upstream_url,
       })
       assert(helpers.dao.plugins:insert {
-        name = "response-ratelimiting",
+        name   = "response-ratelimiting",
         api_id = api.id,
         config = {
           fault_tolerant = false,
-          policy = policy,
-          redis_host = REDIS_HOST,
-          redis_port = REDIS_PORT,
+          policy         = policy,
+          redis_host     = REDIS_HOST,
+          redis_port     = REDIS_PORT,
           redis_password = REDIS_PASSWORD,
           redis_database = REDIS_DATABASE,
-          limits = {video = {minute = 6, hour = 10}, image = {minute = 4}}
+          limits         = { video = { minute = 6, hour = 10 },
+                             image = { minute = 4 } },
         }
       })
 
       api = assert(helpers.dao.apis:insert {
-        name = "test9_com",
-        hosts = { "test9.com" },
-        upstream_url = "http://httpbin.org"
+        name         = "test9_com",
+        hosts        = { "test9.com" },
+        upstream_url = helpers.mock_upstream_url,
       })
       assert(helpers.dao.plugins:insert {
-        name = "response-ratelimiting",
+        name   = "response-ratelimiting",
         api_id = api.id,
         config = {
-          fault_tolerant = false,
-          policy = policy,
+          fault_tolerant      = false,
+          policy              = policy,
           hide_client_headers = true,
-          redis_host = REDIS_HOST,
-          redis_port = REDIS_PORT,
-          redis_password = REDIS_PASSWORD,
-          redis_database = REDIS_DATABASE,
-          limits = {video = {minute = 6}}
+          redis_host          = REDIS_HOST,
+          redis_port          = REDIS_PORT,
+          redis_password      = REDIS_PASSWORD,
+          redis_database      = REDIS_DATABASE,
+          limits              = { video = { minute = 6 } },
         }
       })
 
-      assert(helpers.start_kong())
+      assert(helpers.start_kong({
+        nginx_conf = "spec/fixtures/custom_nginx.template",
+      }))
     end)
 
     teardown(function()
@@ -244,7 +248,7 @@ for i, policy in ipairs({"local", "cluster", "redis"}) do
     end)
 
     describe("Without authentication (IP address)", function()
-      it("blocks if exceeding limit", function()
+      it("#focus blocks if exceeding limit", function()
         for i = 1, 6 do
           local res = assert(helpers.proxy_client():send {
             method = "GET",
@@ -253,6 +257,8 @@ for i, policy in ipairs({"local", "cluster", "redis"}) do
               ["Host"] = "test1.com"
             }
           })
+
+          error(res)
 
           ngx.sleep(SLEEP_TIME) -- Wait for async timer to increment the limit
 
@@ -523,42 +529,44 @@ for i, policy in ipairs({"local", "cluster", "redis"}) do
           helpers.run_migrations()
 
           local api1 = assert(helpers.dao.apis:insert {
-            name = "failtest1_com",
-            hosts = { "failtest1.com" },
-            upstream_url = "http://httpbin.org"
+            name         = "failtest1_com",
+            hosts        = { "failtest1.com" },
+            upstream_url = helpers.mock_upstream_url,
           })
           assert(helpers.dao.plugins:insert {
-            name = "response-ratelimiting",
+            name   = "response-ratelimiting",
             api_id = api1.id,
             config = {
               fault_tolerant = false,
-              policy = policy,
-              redis_host = REDIS_HOST,
-              redis_port = REDIS_PORT,
+              policy         = policy,
+              redis_host     = REDIS_HOST,
+              redis_port     = REDIS_PORT,
               redis_password = REDIS_PASSWORD,
-              limits = {video = {minute = 6}}
+              limits         = { video = { minute = 6} },
             }
           })
 
           local api2 = assert(helpers.dao.apis:insert {
-            name = "failtest2_com",
-            hosts = { "failtest2.com" },
-            upstream_url = "http://httpbin.org"
+            name         = "failtest2_com",
+            hosts        = { "failtest2.com" },
+            upstream_url = helpers.mock_upstream_url,
           })
           assert(helpers.dao.plugins:insert {
             name = "response-ratelimiting",
             api_id = api2.id,
             config = {
               fault_tolerant = true,
-              policy = policy,
-              redis_host = REDIS_HOST,
-              redis_port = REDIS_PORT,
+              policy         = policy,
+              redis_host     = REDIS_HOST,
+              redis_port     = REDIS_PORT,
               redis_password = REDIS_PASSWORD,
-              limits = {video = {minute = 6}}
+              limits         = { video = {minute = 6} }
             }
           })
 
-          assert(helpers.start_kong())
+          assert(helpers.start_kong({
+            nginx_conf = "spec/fixtures/custom_nginx.template",
+          }))
         end)
 
         teardown(function()
@@ -629,34 +637,34 @@ for i, policy in ipairs({"local", "cluster", "redis"}) do
 
         before_each(function()
           local api1 = assert(helpers.dao.apis:insert {
-            name = "failtest3_com",
-            hosts = { "failtest3.com" },
-            upstream_url = "http://mockbin.com"
+            name         = "failtest3_com",
+            hosts        = { "failtest3.com" },
+            upstream_url = helpers.mock_upstream_url,
           })
           assert(helpers.dao.plugins:insert {
-            name = "response-ratelimiting",
+            name   = "response-ratelimiting",
             api_id = api1.id,
             config = {
               fault_tolerant = false,
-              policy = policy,
-              redis_host = "5.5.5.5",
-              limits = {video = {minute = 6}}
+              policy         = policy,
+              redis_host     = "5.5.5.5",
+              limits         = { video = { minute = 6 } },
             }
           })
 
           local api2 = assert(helpers.dao.apis:insert {
-            name = "failtest4_com",
-            hosts = { "failtest4.com" },
-            upstream_url = "http://mockbin.com"
+            name         = "failtest4_com",
+            hosts        = { "failtest4.com" },
+            upstream_url = helpers.mock_upstream_url,
           })
           assert(helpers.dao.plugins:insert {
-            name = "response-ratelimiting",
+            name   = "response-ratelimiting",
             api_id = api2.id,
             config = {
               fault_tolerant = true,
-              policy = policy,
-              redis_host = "5.5.5.5",
-              limits = {video = {minute = 6}}
+              policy         = policy,
+              redis_host     = "5.5.5.5",
+              limits         = { video = { minute = 6 } },
             }
           })
         end)
@@ -696,23 +704,25 @@ for i, policy in ipairs({"local", "cluster", "redis"}) do
         helpers.stop_kong()
         helpers.dao:drop_schema()
         helpers.run_migrations()
-        assert(helpers.start_kong())
+        assert(helpers.start_kong({
+          nginx_conf = "spec/fixtures/custom_nginx.template",
+        }))
 
         api = assert(helpers.dao.apis:insert {
-          name = "expire1_com",
-          hosts = { "expire1.com" },
-          upstream_url = "http://httpbin.org"
+          name         = "expire1_com",
+          hosts        = { "expire1.com" },
+          upstream_url = helpers.mock_upstream_url,
         })
         assert(helpers.dao.plugins:insert {
-          name = "response-ratelimiting",
+          name   = "response-ratelimiting",
           api_id = api.id,
           config = {
-            policy = policy,
-            redis_host = REDIS_HOST,
-            redis_port = REDIS_PORT,
+            policy         = policy,
+            redis_host     = REDIS_HOST,
+            redis_port     = REDIS_PORT,
             redis_password = REDIS_PASSWORD,
             fault_tolerant = false,
-            limits = {video = {minute = 6}}
+            limits         = { video = { minute = 6 } },
           }
         })
       end)
