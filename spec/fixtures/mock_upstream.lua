@@ -1,5 +1,7 @@
 local utils      = require "kong.tools.utils"
 local cjson_safe = require "cjson.safe"
+local cjson      = require "cjson"
+local ws_server  = require "resty.websocket.server"
 
 local function filter_access_by_method(method)
   if ngx.req.get_method() ~= method then
@@ -61,14 +63,24 @@ local function filter_access_by_basic_auth(expected_username,
 end
 
 
-local function send_text_response(text, content_type)
-  content_type               = content_type or "text/plain"
-  ngx.header["X-Powered-By"] = "mock_upstream"
+local function send_text_response(text, content_type, headers)
+  headers       = headers or {}
+  content_type  = content_type or "text/plain"
 
   text = ngx.req.get_method() == "HEAD" and "" or tostring(text)
 
+  ngx.header["X-Powered-By"]   = "mock_upstream"
   ngx.header["Content-Length"] = #text + 1
   ngx.header["Content-Type"]   = content_type
+
+  for header,value in pairs(headers) do
+    if type(value) == "table" then
+      ngx.header[header] = table.concat(value, ", ")
+    else
+      ngx.header[header] = value
+    end
+  end
+
   return ngx.say(text)
 end
 
@@ -125,11 +137,12 @@ local function get_default_json_response()
   local req                = ngx.req
   local headers            = req.get_headers(0)
   local data, form, params = "", {}, cjson_safe.null
-  local ct                 = headers["content-type"]
+  local ct                 = headers["Content-Type"]
   if ct then
     req.read_body()
     if string.find(ct, "application/x-www-form-urlencoded", nil, true) then
       form = req.get_post_args()
+      form['potato'] = true
 
     elseif string.find(ct, "application/json", nil, true) then
       local err
@@ -156,19 +169,18 @@ local function get_default_json_response()
 end
 
 
-local function send_default_json_response(extra)
-  local cjson = require "cjson"
-  local tbl   = utils.table_merge(get_default_json_response(), extra)
-  return send_text_response(cjson.encode(tbl), "application/json")
+local function send_default_json_response(extra_fields, response_headers)
+  local tbl = utils.table_merge(get_default_json_response(), extra_fields)
+  return send_text_response(cjson.encode(tbl),
+                            "application/json", response_headers)
 end
 
 
 local function serve_web_sockets()
-  local server = require "resty.websocket.server"
-  local wb, err = server:new{
-    timeout = 5000,
+  local wb, err = ws_server:new({
+    timeout         = 5000,
     max_payload_len = 65535,
-  }
+  })
 
   if not wb then
     ngx.log(ngx.ERR, "failed to open websocket: ", err)

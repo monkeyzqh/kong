@@ -252,14 +252,15 @@ http {
                 local mu = require "spec.fixtures.mock_upstream"
                 return mu.send_default_json_response({
                     valid_routes = {
-                        ["/ws"]                     = "Websocket echo server",
-                        ["/get"]                    = "Accepts a GET request and returns it in JSON format",
-                        ["/post"]                   = "Accepts a POST request and returns it in JSON format",
-                        ["/anything"]               = "Accepts any request and returns it in JSON format",
-                        ["/request"]                = "Alias to /anything",
-                        ["/delay/:duration"]        = "Delay the response for <duration> seconds",
-                        ["/basic-auth/:user/:pass"] = "Performs HTTP basic authentication with the given credentials",
-                        ["/status/:code"]           = "Returns a response with the specified <status code>"
+                        ["/ws"]                         = "Websocket echo server",
+                        ["/get"]                        = "Accepts a GET request and returns it in JSON format",
+                        ["/post"]                       = "Accepts a POST request and returns it in JSON format",
+                        ["/response-headers?:key=:val"] = "Returns given response headers",
+                        ["/anything"]                   = "Accepts any request and returns it in JSON format",
+                        ["/request"]                    = "Alias to /anything",
+                        ["/delay/:duration"]            = "Delay the response for <duration> seconds",
+                        ["/basic-auth/:user/:pass"]     = "Performs HTTP basic authentication with the given credentials",
+                        ["/status/:code"]               = "Returns a response with the specified <status code>"
                     },
                 })
             }
@@ -291,6 +292,17 @@ http {
             content_by_lua_block {
                 local mu  = require "spec.fixtures.mock_upstream"
                 return mu.send_default_json_response()
+            }
+        }
+
+        location = /response-headers {
+            access_by_lua_block {
+                local mu = require "spec.fixtures.mock_upstream"
+                return mu.filter_access_by_method("GET")
+            }
+            content_by_lua_block {
+                local mu               = require "spec.fixtures.mock_upstream"
+                return mu.send_default_json_response({}, ngx.req.get_uri_args())
             }
         }
 
@@ -326,7 +338,7 @@ http {
 
                 ngx.sleep(delay_seconds)
 
-                return mu.send_json_response({
+                return mu.send_default_json_response({
                     delay = delay_seconds,
                 })
             }
@@ -355,5 +367,7 @@ http {
                 end
             }
         }
+
+
     }
 }
